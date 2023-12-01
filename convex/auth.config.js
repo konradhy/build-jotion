@@ -1,8 +1,8 @@
 export default {
   providers: [
     {
-      domain: "https://actual-glider-21.clerk.accounts.dev",
+      domain: "https://credible-pheasant-33.clerk.accounts.dev",
       applicationID: "convex",
-    }
-  ]
-}
+    },
+  ],
+};
