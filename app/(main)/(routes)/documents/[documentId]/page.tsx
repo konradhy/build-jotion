@@ -35,10 +35,9 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null); // Update this line
 
-
   const [isTyping, setIsTyping] = useState(false);
 
-    const handleTyping = (typing: boolean) => {
+  const handleTyping = (typing: boolean) => {
     setIsTyping(typing);
     updatePresence({ typing });
   };
@@ -46,16 +45,13 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const handleKeyDown = () => {
     handleTyping(true); // User is typing
     setTimeout(() => handleTyping(false), 5000);
-      if (typingTimeout.current) {
+    if (typingTimeout.current) {
       clearTimeout(typingTimeout.current); // Clear existing timeout
     }
-    typingTimeout.current = setTimeout(() => handleTyping(false), 5000)
-
+    typingTimeout.current = setTimeout(() => handleTyping(false), 5000);
   };
 
-  
-
-useEffect(() => {
+  useEffect(() => {
     window.document.addEventListener("keydown", handleKeyDown);
     return () => {
       window.document.removeEventListener("keydown", handleKeyDown);
@@ -83,6 +79,7 @@ useEffect(() => {
       y: 0,
       typing: false as boolean,
       name: userName,
+      profileUrl: user.user?.imageUrl || "",
     },
   );
 
@@ -97,8 +94,6 @@ useEffect(() => {
   const update = useMutation(api.documents.update);
   useTypingIndicator(data.text, updatePresence); //Refactor
   // Update presence data including typing status
-
-
 
   const onChange = (content: string) => {
     update({
@@ -149,8 +144,8 @@ useEffect(() => {
           othersPresence={presentOthers}
           updatePresence={updatePresence}
         >
-          <Toolbar initialData={document} />
           <Facepile othersPresence={presentOthers} />
+          <Toolbar initialData={document} />
 
           <Editor
             onChange={onChange}

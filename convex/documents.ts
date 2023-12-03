@@ -248,7 +248,7 @@ export const getById = query({
     }
 
     if (!identity) {
-      throw new Error("Not authenticated");
+      return;
     }
 
     const userId = identity.subject;

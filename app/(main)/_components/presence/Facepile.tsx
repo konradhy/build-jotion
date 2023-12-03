@@ -1,11 +1,16 @@
 import classNames from "classnames";
 import { useEffect, useState } from "react";
 import { isOnline, PresenceData } from "@/hooks/usePresence";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const UPDATE_MS = 1000;
 
 type FacePileProps = {
-  othersPresence?: PresenceData<{ emoji: string; name: string }>[];
+  othersPresence?: PresenceData<{
+    emoji: string;
+    name: string;
+    profileUrl: string;
+  }>[];
 };
 export const Facepile = ({ othersPresence }: FacePileProps) => {
   const [, setNow] = useState(Date.now());
@@ -14,7 +19,7 @@ export const Facepile = ({ othersPresence }: FacePileProps) => {
     return () => clearInterval(intervalId);
   }, [setNow]);
   return (
-    <div className="isolate flex -space-x-2 overflow-hidden">
+    <div className="isolate flex space-x-1 ">
       {othersPresence
         ?.slice(0, 5)
         .map((presence) => ({
@@ -29,18 +34,23 @@ export const Facepile = ({ othersPresence }: FacePileProps) => {
         .map((presence) => (
           <span
             className={classNames(
-              "relative inline-block h-6 w-6 rounded-full bg-white ring-2 ring-white text-xl",
-              { grayscale: !presence.online },
+              "relative inline-block rounded-full bg-white ring-2 ring-white",
             )}
             key={presence.created}
             title={
               presence.online
-                ? `e${presence.data.name}Online`
-                : `${presence.data.name}Last seen ` +
+                ? `${presence.data.name} Online`
+                : `${presence.data.name} Last seen ` +
                   new Date(presence.updated).toDateString()
             }
           >
-            {presence.data.emoji}
+            <Avatar>
+              <AvatarImage
+                className="rounded-full h-8 w-8"
+                src={`${presence.data.profileUrl}`}
+              />
+              <AvatarFallback> {presence.data.name[0]}</AvatarFallback>
+            </Avatar>
           </span>
         ))}
     </div>
