@@ -14,8 +14,9 @@ import {
 import "@blocknote/core/style.css";
 
 import { useEdgeStore } from "@/lib/edgestore";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { remove } from "@/convex/documents";
+import { set } from "zod";
 
 //fix type safety props
 interface EditorProps {
@@ -24,7 +25,7 @@ interface EditorProps {
   editable?: boolean;
   liveContent?: string;
   myPresenceData: any;
-  othersPresence:any
+  othersPresence: any;
 }
 
 const Editor = ({
@@ -34,12 +35,10 @@ const Editor = ({
   liveContent,
   myPresenceData,
   othersPresence,
-
 }: EditorProps) => {
   const { resolvedTheme } = useTheme();
   const { edgestore } = useEdgeStore();
-  const liveContentRef = useRef(liveContent);
-
+  const [notification, setNotification] = useState(false);
 
   const handleUpload = async (file: File) => {
     const response = await edgestore.publicFiles.upload({
@@ -230,8 +229,6 @@ const Editor = ({
     editor.removeBlocks(blockIdentifiers);
   };
 
-
-
   const replaceAllBlocks = () => {
     if (!liveContent) return;
     console.log("live automatically");
@@ -241,79 +238,64 @@ const Editor = ({
     console.log("editor blocks", editor.topLevelBlocks);
 
     // console.log("blocks to insert", blocksToInsert);
-     removeAllBlocks();
+    removeAllBlocks();
 
-   editor.insertBlocks(blocksToInsert, editor.topLevelBlocks[0]);
+    editor.insertBlocks(blocksToInsert, editor.topLevelBlocks[0]);
+    setNotification(false);
   };
-
 
   useEffect(() => {
     // Check if any user in othersPresence is currently typing
-    const isAnyoneTyping = othersPresence.some(presence => presence.data.typing);
+    const isAnyoneTyping = othersPresence.some(
+      (presence) => presence.data.typing,
+    );
 
-   
-    //if someone is typing and live content exists then compare the blocks 
+    //if someone is typing and live content exists then compare the blocks
     if (isAnyoneTyping && liveContent) {
-  
-      console.log("someone is typing")
+      console.log("someone is typing");
 
       const blocksToCompare = JSON.parse(liveContent) as PartialBlock[];
       const editorBlocks = editor.topLevelBlocks;
-      
- 
-      if(blocksToCompare===editorBlocks){
-               console.log("blocks are the same")
-        return
- 
+
+      if (blocksToCompare === editorBlocks) {
+        console.log("blocks are the same");
+
+        return;
+
         //if there is a difference, then we know that live content has changed and we can call replaceAllBlocks
-      }else{
-       //replaceAllBlocks()
+      } else {
         /*
         
         Doesn't quite work right. Whether typing is controlled by the update document function in the parent component or the window.document.listener I still get the same result.
         The editor rerendering in an infinite loop. I think it is because the editor is rerendering when the blocks are replaced and then the blocks are replaced again because the editor is rerendering.
 
         */
+        setNotification(true);
 
-        console.log("blocks are different")
-       
-   
-      
+        console.log("blocks are different");
       }
-
-      // replaceAllBlocks();
-
-
-      /*
-      step 1: get live content which comes from a prop It is already a string
-      step 2: get the blocks from the editor, 
-      step 3: convert both blocks to strings
-      step 4: compare the strings
-      step 5: if they are the same, do nothing
-    
-
-      */
     }
-
-    
-
-
-
- 
-  }, [othersPresence ]);
-
-
+  }, [othersPresence]);
 
   return (
     <div>
+      <div className="flex flex-col">
+        {notification && (
+          <button
+            onClick={replaceAllBlocks}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm p-3 rounded-md flex items-center justify-center transition duration-300 ease-in-out"
+          >
+            <p className="font-medium">
+              Click to synchronize with the latest changes made by
+              collaborators.
+            </p>
+          </button>
+        )}
+      </div>
       <BlockNoteView
         editor={editor}
         theme={resolvedTheme === "dark" ? "dark" : "light"}
       />
-
-      <div className="flex flex-col">
-        <button onClick={replaceAllBlocks}>Update Collaborators</button>
-      </div>
     </div>
   );
 };

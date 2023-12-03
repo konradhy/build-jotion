@@ -95,7 +95,7 @@ useEffect(() => {
   const [documentContent, setDocumentContent] = useState(document?.content);
 
   const update = useMutation(api.documents.update);
-  useTypingIndicator(data.text, updatePresence);
+  useTypingIndicator(data.text, updatePresence); //Refactor
   // Update presence data including typing status
 
 

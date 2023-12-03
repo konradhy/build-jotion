@@ -8,6 +8,7 @@ type Data = {
   x: number;
   y: number;
   typing: boolean;
+  name: string;
 };
 
 type GenericSharedCursorsProps = {
@@ -24,7 +25,6 @@ export default function GenericSharedCursors({
   children,
 }: GenericSharedCursorsProps) {
   const user = useUser();
-
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,19 +47,10 @@ export default function GenericSharedCursors({
   return (
     <div ref={ref} className="relative">
       {children}
-      <span
-        className="absolute cursor-none pointer-events-none"
-        style={{
-          left: myPresenceData.x - 20,
-          top: myPresenceData.y - 10,
-          transform: "translate(-50%, -50%)",
-        }}
-      >
-        {myPresenceData.emoji + " " + myPresenceData.text}
-      </span>
+
       {othersPresence?.filter(isOnline).map((presence) => (
         <span
-          className="absolute transition-all duration-200"
+          className="absolute bg-blue-500 text-white text-xs font-semibold py-1 px-2 rounded-full transition-all duration-200"
           key={presence.created}
           style={{
             left: presence.data.x,
@@ -67,7 +58,8 @@ export default function GenericSharedCursors({
             transform: "translate(-50%, -50%)",
           }}
         >
-          {user.user?.firstName}
+          {presence.data.name}
+         {presence.data.typing && " ..."}
         </span>
       ))}
     </div>
