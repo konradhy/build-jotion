@@ -34,8 +34,8 @@ interface EditorProps {
   initialContent?: string;
   editable?: boolean;
   liveContent?: string;
-  myPresenceData: Data;
-  othersPresence: PresenceData<Data>[];
+  myPresenceData?: Data;
+  othersPresence?: PresenceData<Data>[];
 }
 
 const Editor = ({
