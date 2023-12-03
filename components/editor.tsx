@@ -256,7 +256,7 @@ const Editor = ({
 
   useEffect(() => {
     // Check if any user in othersPresence is currently typing
-    const isAnyoneTyping = othersPresence.some(
+    const isAnyoneTyping = othersPresence?.some(
       (presence) => presence.data.typing,
     );
 
