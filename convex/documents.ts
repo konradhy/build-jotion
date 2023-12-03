@@ -387,16 +387,12 @@ export const removeCoverImage = mutation({
 export const searchDocuments = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
-    // Retrieve the identity of the logged-in user
-
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthenticated");
     }
-    const userId = identity.subject; // The logged-in user's ID
+    const userId = identity.subject;
 
-    // Perform the search, filtering for documents where `isArchived` is false
-    // and the `userId` matches the logged-in user's ID
     return await ctx.db
       .query("documents")
       .withSearchIndex(
@@ -418,7 +414,6 @@ export const updateEditor = mutation({
     shouldAdd: v.boolean(),
   },
   handler: async (ctx, args) => {
-    // Authentication check
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthenticated");
@@ -427,13 +422,11 @@ export const updateEditor = mutation({
     const userId = identity.subject;
     const userEmail = identity.email;
 
-    // Document existence check
     const document = await ctx.db.get(args.id);
     if (!document) {
       throw new Error("Document not found");
     }
 
-    // Authorization check
     if (
       document.userId !== userId &&
       !document.editors?.includes(userEmail as string)
@@ -441,7 +434,6 @@ export const updateEditor = mutation({
       throw new Error("Unauthorized");
     }
 
-    // Update the editors array based on shouldAdd flag
     let updatedEditors = document.editors || [];
     if (args.shouldAdd) {
       if (!updatedEditors.includes(args.editorEmail)) {
@@ -455,10 +447,32 @@ export const updateEditor = mutation({
       );
     }
 
-    // Update the document with the new editors list
     const updatedDocument = await ctx.db.patch(args.id, {
       editors: updatedEditors,
     });
     return updatedDocument;
+  },
+});
+
+export const getDocumentsByEditorEmail = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+
+    const userId = identity.subject;
+
+    const userEmail = identity.email;
+    if (!userEmail) throw new Error("User email not found");
+
+    // Fetch documents where the editors array contains the provided email address
+    const documents = await ctx.db.query("documents").collect();
+
+    const filteredDocs = documents.filter(
+      (doc) => doc.editors && doc.editors.includes(userEmail),
+    );
+    return filteredDocs;
   },
 });

@@ -9,7 +9,8 @@ import {
   Search,
   Settings,
   Trash,
-  FolderSearch
+  FolderSearch,
+  HeartHandshake,
 } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
@@ -160,10 +161,23 @@ export const Navigation = () => {
         <div>
           <UserItem />
           <Item label="Search" icon={Search} isSearch onClick={search.onOpen} />
-          <Item label="Deep Search" icon={FolderSearch} onClick={()=>{router.push("/search")}} />
+          <Item
+            label="Deep Search"
+            icon={FolderSearch}
+            onClick={() => {
+              router.push("/search");
+            }}
+          />
           {params.documentId && (
             <Item label="Add Editor" icon={PenBox} onClick={newEditor.onOpen} />
           )}
+          <Item
+            label="Shared Projects"
+            icon={HeartHandshake}
+            onClick={() => {
+              router.push("/collaborative");
+            }}
+          />
 
           <Item label="Settings" icon={Settings} onClick={settings.onOpen} />
           <Item onClick={handleCreate} label="New page" icon={PlusCircle} />
