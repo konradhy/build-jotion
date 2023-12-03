@@ -1,7 +1,15 @@
 "use client";
 
+/*
+1. Ai tools only work by reading the current block and then updating it. This can be improved by taking advantage of insert, replace, nest/unnest, identifying certain blocks, etc to make more dynamic and useful tools.
+2. This editor is 300 lines long. The AI blocks can easily be moved to their own files and folder structure
+3. Live Editor update doesn't exist. The bug lies with when and how I rerender the content Doesn't quite work right. Whether typing is controlled by the update document function in the parent component or the window.document.listener I still get the same result.
+        The editor rerendering in an infinite loop. I think it is because the editor is rerendering when the blocks are replaced and then the blocks are replaced again because the editor is rerendering.
+4. The token/completion section needs to be reworked
+*/
+
 import { useCompletion } from "ai/react";
-import { BrainCircuit, Languages, Minimize2 } from "lucide-react";
+import { BrainCircuit, Languages, Minimize2, Wand } from "lucide-react";
 
 import { useTheme } from "next-themes";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
@@ -15,15 +23,10 @@ import "@blocknote/core/style.css";
 
 import { useEdgeStore } from "@/lib/edgestore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { remove } from "@/convex/documents";
-import { set } from "zod";
 import { PresenceData } from "@/hooks/usePresence";
-
-//fix type safety props
 
 type Data = {
   text: string;
-  emoji: string;
   x: number;
   y: number;
   typing: boolean;
@@ -64,14 +67,14 @@ const Editor = ({
       api: "/api/generate/language",
     });
 
-  const { complete: completeSynthesize, completion: completionSynthesize } =
+  const { complete: completeActionPlan, completion: completionActionPlan } =
     useCompletion({
-      api: "/api/generate/synthesize",
+      api: "/api/generate/actionplan",
     });
 
-  const { complete: completeThought, completion: completionThought } =
+  const { complete: completeStory, completion: completionStory } =
     useCompletion({
-      api: "/api/generate/completion",
+      api: "/api/generate/storymaker",
     });
 
   //AI Blocks
@@ -99,9 +102,9 @@ const Editor = ({
     hint: "Type your message and end with the target language",
   };
 
-  //synthesize block
+  //actionplan block
 
-  const synthesizeBlock = async () => {
+  const actionPlanBlock = async () => {
     let block = editor.getTextCursorPosition().block;
     if (!block || !block.content || block.content.length === 0) {
       return;
@@ -110,22 +113,22 @@ const Editor = ({
     block.content.forEach((contentItem) => {
       if ("text" in contentItem) {
         let aiPrompt = contentItem.text;
-        completeSynthesize(aiPrompt);
+        completeActionPlan(aiPrompt);
       }
     });
   };
 
-  const insertSynthesizeBlock: ReactSlashMenuItem = {
-    name: "SummarySynth",
-    execute: synthesizeBlock,
-    aliases: ["ss", "sy"],
+  const insertActionPlanBlock: ReactSlashMenuItem = {
+    name: "Action Angel",
+    execute: actionPlanBlock,
+    aliases: ["aa", "an"],
     group: "Ai Tools",
-    icon: <Minimize2 size={18} />,
+    icon: <Wand size={18} />,
     hint: "Type your text and get a concise, key-point summary.",
   };
 
-  //thought completion block
-  const thoughtBlock = async () => {
+  //StoryMaker  block
+  const storyBlock = async () => {
     let block = editor.getTextCursorPosition().block;
     if (!block || !block.content || block.content.length === 0) {
       return;
@@ -134,24 +137,24 @@ const Editor = ({
     block.content.forEach((contentItem) => {
       if ("text" in contentItem) {
         let aiPrompt = contentItem.text;
-        completeThought(aiPrompt);
+        completeStory(aiPrompt);
       }
     });
   };
 
   const insertThoughtBlock: ReactSlashMenuItem = {
-    name: "ElucidatorErik",
-    execute: thoughtBlock,
-    aliases: ["ss", "sy"],
+    name: "Tale Spinner",
+    execute: storyBlock,
+    aliases: ["ts", "sp"],
     group: "Ai Tools",
     icon: <BrainCircuit size={18} />,
-    hint: "Begin your thought and let ElucidatorErik delve deeper, effortlessly expanding your sentences with clarity and coherence.",
+    hint: "Type some words and Tale Spinner will generate a story for you!",
   };
 
   const customSlashMenuItemList = [
     ...getDefaultReactSlashMenuItems(),
     insertTranslateBlock,
-    insertSynthesizeBlock,
+    insertActionPlanBlock,
     insertThoughtBlock,
   ];
 
@@ -188,47 +191,46 @@ const Editor = ({
     });
   }, [completionLanguage, tokenLanguage, editor]);
 
-  //AI Config for synthesizer
-  const previousSynthesizeCompletion = useRef("");
-  const tokenSynthesize = useMemo(() => {
-    if (!completionSynthesize) return;
-    const diff = completionSynthesize.slice(
-      previousSynthesizeCompletion.current.length,
+  //AI Config for ActionPlan
+
+  const previousActionPlanCompletion = useRef("");
+  const tokenActionPlan = useMemo(() => {
+    if (!completionActionPlan) return;
+    const diff = completionActionPlan.slice(
+      previousActionPlanCompletion.current.length,
     );
     return diff;
-  }, [completionSynthesize]);
+  }, [completionActionPlan]);
 
   useEffect(() => {
-    if (!tokenSynthesize) return;
+    if (!tokenActionPlan) return;
 
     let block = editor.getTextCursorPosition().block;
     if (!block) return;
 
     editor.updateBlock(block, {
-      content: completionSynthesize,
+      content: completionActionPlan,
     });
-  }, [completionSynthesize, tokenSynthesize, editor]);
+  }, [completionActionPlan, tokenActionPlan, editor]);
 
-  //Ai config for thoughtCompletion
-  const previousThoughtCompletion = useRef("");
-  const tokenThought = useMemo(() => {
-    if (!completionThought) return;
-    const diff = completionThought.slice(
-      previousThoughtCompletion.current.length,
-    );
+  //Ai config for story maker
+  const previousStoryCompletion = useRef("");
+  const tokenStory = useMemo(() => {
+    if (!completionStory) return;
+    const diff = completionStory.slice(previousStoryCompletion.current.length);
     return diff;
-  }, [completionThought]);
+  }, [completionStory]);
 
   useEffect(() => {
-    if (!tokenThought) return;
+    if (!tokenStory) return;
 
     let block = editor.getTextCursorPosition().block;
     if (!block) return;
 
     editor.updateBlock(block, {
-      content: completionThought,
+      content: completionStory,
     });
-  }, [completionThought, tokenThought, editor]);
+  }, [completionStory, tokenStory, editor]);
 
   //Live content
 
@@ -259,29 +261,18 @@ const Editor = ({
     const isAnyoneTyping = othersPresence?.some(
       (presence) => presence.data.typing,
     );
-
     //if someone is typing and live content exists then compare the blocks
     if (isAnyoneTyping && liveContent) {
       console.log("someone is typing");
-
       const blocksToCompare = JSON.parse(liveContent) as PartialBlock[];
       const editorBlocks = editor.topLevelBlocks;
-
       if (blocksToCompare === editorBlocks) {
         console.log("blocks are the same");
-
         return;
 
         //if there is a difference, then we know that live content has changed and we can call replaceAllBlocks
       } else {
-        /*
-        
-        Doesn't quite work right. Whether typing is controlled by the update document function in the parent component or the window.document.listener I still get the same result.
-        The editor rerendering in an infinite loop. I think it is because the editor is rerendering when the blocks are replaced and then the blocks are replaced again because the editor is rerendering.
-
-        */
         setNotification(true);
-
         console.log("blocks are different");
       }
     }

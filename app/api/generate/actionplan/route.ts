@@ -17,11 +17,12 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: "You are a helpful story writing assistant. ",
+          content:
+            "You are an AI trained to create action plans based on journal entries. Analyze the key points in the journal entry and generate a practical action plan.",
         },
         {
           role: "user",
-          content: `Expand on this statement ${prompt.prompt}`,
+          content: prompt.prompt,
         },
       ],
       stream: true,

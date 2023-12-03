@@ -18,11 +18,11 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "Write a synthesis of the following information, creating a cohesive statement that captures the key points:",
+            "You are an AI capable of creating stories. Generate a story based on the provided elements. Be colorful in your details. Pick a genre and stick to it. Add twists at the end.",
         },
         {
           role: "user",
-          content: prompt.prompt,
+          content: `Here is some random user input by me for which you are to create a story ${prompt.prompt}`,
         },
       ],
       stream: true,
