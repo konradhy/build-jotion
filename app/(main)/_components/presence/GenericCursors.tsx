@@ -28,7 +28,8 @@ export default function GenericSharedCursors({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handlePointerMove = (e) => {
+    const handlePointerMove = (e: any) => {
+      if (!ref.current) return;
       const boundingRect = ref.current.getBoundingClientRect();
       updatePresence({
         x: e.clientX - boundingRect.left,
@@ -37,10 +38,10 @@ export default function GenericSharedCursors({
     };
 
     const currentRef = ref.current;
-    currentRef.addEventListener("pointermove", handlePointerMove);
+    currentRef?.addEventListener("pointermove", handlePointerMove);
 
     return () => {
-      currentRef.removeEventListener("pointermove", handlePointerMove);
+      currentRef?.removeEventListener("pointermove", handlePointerMove);
     };
   }, [updatePresence]);
 
@@ -59,7 +60,7 @@ export default function GenericSharedCursors({
           }}
         >
           {presence.data.name}
-         {presence.data.typing && " ..."}
+          {presence.data.typing && " ..."}
         </span>
       ))}
     </div>

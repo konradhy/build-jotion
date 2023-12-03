@@ -17,15 +17,25 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { remove } from "@/convex/documents";
 import { set } from "zod";
+import { PresenceData } from "@/hooks/usePresence";
 
 //fix type safety props
+
+type Data = {
+  text: string;
+  emoji: string;
+  x: number;
+  y: number;
+  typing: boolean;
+  name: string;
+};
 interface EditorProps {
   onChange: (value: string) => void;
   initialContent?: string;
   editable?: boolean;
   liveContent?: string;
-  myPresenceData: any;
-  othersPresence: any;
+  myPresenceData: Data;
+  othersPresence: PresenceData<Data>[];
 }
 
 const Editor = ({

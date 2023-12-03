@@ -40,7 +40,7 @@ export const NewEditorModal = () => {
     });
   };
 
-  const removeEditor = (editorToRemove) => {
+  const removeEditor = (editorToRemove: string) => {
     const promise = removeEditorMutation({
       id: documentId as Id<"documents">,
       editorEmail: editorToRemove,
@@ -54,7 +54,7 @@ export const NewEditorModal = () => {
     });
   };
 
-  const handleEmailChange = (e) => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     setEditorEmail(email);
 
