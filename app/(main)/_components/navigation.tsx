@@ -9,6 +9,7 @@ import {
   Search,
   Settings,
   Trash,
+  FolderSearch
 } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
@@ -159,6 +160,7 @@ export const Navigation = () => {
         <div>
           <UserItem />
           <Item label="Search" icon={Search} isSearch onClick={search.onOpen} />
+          <Item label="Deep Search" icon={FolderSearch} onClick={()=>{router.push("/search")}} />
           {params.documentId && (
             <Item label="Add Editor" icon={PenBox} onClick={newEditor.onOpen} />
           )}

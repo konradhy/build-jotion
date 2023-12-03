@@ -382,3 +382,26 @@ export const removeCoverImage = mutation({
 });
 
 
+export const searchDocuments = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    // Retrieve the identity of the logged-in user
+
+    const identity = await ctx.auth.getUserIdentity();
+     if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const userId = identity.subject; // The logged-in user's ID
+
+    // Perform the search, filtering for documents where `isArchived` is false
+    // and the `userId` matches the logged-in user's ID
+    return await ctx.db
+      .query("documents")
+      .withSearchIndex("search_content", (q) => 
+        q.search("content", args.query)
+         .eq("userId", userId)      // Filter by the logged-in user's ID
+         .eq("isArchived", false)   // Filter out archived documents
+      )
+      .take(5);
+  }
+});
