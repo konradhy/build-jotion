@@ -140,7 +140,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
         className="md:max-w-3xl lg:max-w-4xl mx-auto"
       >
         <GenericSharedCursors
-          myPresenceData={data}
           othersPresence={presentOthers}
           updatePresence={updatePresence}
         >
