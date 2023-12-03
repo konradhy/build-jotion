@@ -27,11 +27,9 @@ export const archive = mutation({
     const recursiveArchive = async (documentId: Id<"documents">) => {
       const children = await ctx.db
         .query("documents")
-        .withIndex("by_user_parent", (q) => (
-          q
-            .eq("userId", userId)
-            .eq("parentDocument", documentId)
-        ))
+        .withIndex("by_user_parent", (q) =>
+          q.eq("userId", userId).eq("parentDocument", documentId),
+        )
         .collect();
 
       for (const child of children) {
@@ -41,7 +39,7 @@ export const archive = mutation({
 
         await recursiveArchive(child._id);
       }
-    }
+    };
 
     const document = await ctx.db.patch(args.id, {
       isArchived: true,
@@ -50,12 +48,12 @@ export const archive = mutation({
     recursiveArchive(args.id);
 
     return document;
-  }
-})
+  },
+});
 
 export const getSidebar = query({
   args: {
-    parentDocument: v.optional(v.id("documents"))
+    parentDocument: v.optional(v.id("documents")),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -69,13 +67,9 @@ export const getSidebar = query({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_user_parent", (q) =>
-        q
-          .eq("userId", userId)
-          .eq("parentDocument", args.parentDocument)
+        q.eq("userId", userId).eq("parentDocument", args.parentDocument),
       )
-      .filter((q) =>
-        q.eq(q.field("isArchived"), false)
-      )
+      .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
       .collect();
 
@@ -86,7 +80,7 @@ export const getSidebar = query({
 export const create = mutation({
   args: {
     title: v.string(),
-    parentDocument: v.optional(v.id("documents"))
+    parentDocument: v.optional(v.id("documents")),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -106,7 +100,7 @@ export const create = mutation({
     });
 
     return document;
-  }
+  },
 });
 
 export const getTrash = query({
@@ -122,14 +116,12 @@ export const getTrash = query({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .filter((q) =>
-        q.eq(q.field("isArchived"), true),
-      )
+      .filter((q) => q.eq(q.field("isArchived"), true))
       .order("desc")
       .collect();
 
     return documents;
-  }
+  },
 });
 
 export const restore = mutation({
@@ -156,11 +148,9 @@ export const restore = mutation({
     const recursiveRestore = async (documentId: Id<"documents">) => {
       const children = await ctx.db
         .query("documents")
-        .withIndex("by_user_parent", (q) => (
-          q
-            .eq("userId", userId)
-            .eq("parentDocument", documentId)
-        ))
+        .withIndex("by_user_parent", (q) =>
+          q.eq("userId", userId).eq("parentDocument", documentId),
+        )
         .collect();
 
       for (const child of children) {
@@ -170,7 +160,7 @@ export const restore = mutation({
 
         await recursiveRestore(child._id);
       }
-    }
+    };
 
     const options: Partial<Doc<"documents">> = {
       isArchived: false,
@@ -188,7 +178,7 @@ export const restore = mutation({
     recursiveRestore(args.id);
 
     return document;
-  }
+  },
 });
 
 export const remove = mutation({
@@ -215,7 +205,7 @@ export const remove = mutation({
     const document = await ctx.db.delete(args.id);
 
     return document;
-  }
+  },
 });
 
 export const getSearch = query({
@@ -231,14 +221,12 @@ export const getSearch = query({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .filter((q) =>
-        q.eq(q.field("isArchived"), false),
-      )
+      .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
-      .collect()
+      .collect();
 
     return documents;
-  }
+  },
 });
 
 export const getById = query({
@@ -261,13 +249,17 @@ export const getById = query({
     }
 
     const userId = identity.subject;
+    const userEmail = identity.email;
 
-    if (document.userId !== userId) {
+    if (
+      document.userId !== userId &&
+      !document.editors?.includes(userEmail as string)
+    ) {
       throw new Error("Unauthorized");
     }
 
     return document;
-  }
+  },
 });
 
 export const update = mutation({
@@ -277,7 +269,8 @@ export const update = mutation({
     content: v.optional(v.string()),
     coverImage: v.optional(v.string()),
     icon: v.optional(v.string()),
-    isPublished: v.optional(v.boolean())
+    isPublished: v.optional(v.boolean()),
+    editor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -287,17 +280,39 @@ export const update = mutation({
     }
 
     const userId = identity.subject;
+    const userEmail = identity.email;
 
-    const { id, ...rest } = args;
-
+    const { id, editor, ...rest } = args;
+    //break
     const existingDocument = await ctx.db.get(args.id);
 
     if (!existingDocument) {
       throw new Error("Not found");
     }
 
-    if (existingDocument.userId !== userId) {
+    if (
+      existingDocument.userId !== userId &&
+      !existingDocument.editors?.includes(userEmail as string)
+    ) {
       throw new Error("Unauthorized");
+    }
+
+    const existingEditors = existingDocument.editors || [];
+
+    //Consider refactoring. Perhaps i should have a separate function that handles adding editors.
+    //only the creators should have the power to add editors or permanently delete a document
+    if (editor) {
+      if (!existingEditors.includes(editor)) {
+        existingEditors.push(editor);
+        const updatedDocument = await ctx.db.patch(id, {
+          ...rest,
+          editors: existingEditors,
+        });
+
+        return updatedDocument;
+      } else {
+        throw new Error("Editor already has access");
+      }
     }
 
     const document = await ctx.db.patch(args.id, {
@@ -330,11 +345,11 @@ export const removeIcon = mutation({
     }
 
     const document = await ctx.db.patch(args.id, {
-      icon: undefined
+      icon: undefined,
     });
 
     return document;
-  }
+  },
 });
 
 export const removeCoverImage = mutation({
@@ -363,5 +378,7 @@ export const removeCoverImage = mutation({
     });
 
     return document;
-  }
+  },
 });
+
+

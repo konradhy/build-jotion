@@ -15,16 +15,31 @@ import "@blocknote/core/style.css";
 
 import { useEdgeStore } from "@/lib/edgestore";
 import { useEffect, useMemo, useRef } from "react";
+import { remove } from "@/convex/documents";
 
+//fix type safety props
 interface EditorProps {
   onChange: (value: string) => void;
   initialContent?: string;
   editable?: boolean;
+  liveContent?: string;
+  myPresenceData: any;
+  othersPresence:any
 }
 
-const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
+const Editor = ({
+  onChange,
+  initialContent,
+  editable,
+  liveContent,
+  myPresenceData,
+  othersPresence,
+
+}: EditorProps) => {
   const { resolvedTheme } = useTheme();
   const { edgestore } = useEdgeStore();
+  const liveContentRef = useRef(liveContent);
+
 
   const handleUpload = async (file: File) => {
     const response = await edgestore.publicFiles.upload({
@@ -206,12 +221,99 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
     });
   }, [completionThought, tokenThought, editor]);
 
+  //Live content
+
+  //when live content changes, update the editor
+  const removeAllBlocks = () => {
+    const allBlocks = editor.topLevelBlocks;
+    const blockIdentifiers = allBlocks.map((block) => block.id);
+    editor.removeBlocks(blockIdentifiers);
+  };
+
+
+
+  const replaceAllBlocks = () => {
+    if (!liveContent) return;
+    console.log("live automatically");
+    const blocksToInsert = JSON.parse(liveContent) as PartialBlock[];
+
+    console.log("blocks to insert", blocksToInsert);
+    console.log("editor blocks", editor.topLevelBlocks);
+
+    // console.log("blocks to insert", blocksToInsert);
+     removeAllBlocks();
+
+   editor.insertBlocks(blocksToInsert, editor.topLevelBlocks[0]);
+  };
+
+
+  useEffect(() => {
+    // Check if any user in othersPresence is currently typing
+    const isAnyoneTyping = othersPresence.some(presence => presence.data.typing);
+
+   
+    //if someone is typing and live content exists then compare the blocks 
+    if (isAnyoneTyping && liveContent) {
+  
+      console.log("someone is typing")
+
+      const blocksToCompare = JSON.parse(liveContent) as PartialBlock[];
+      const editorBlocks = editor.topLevelBlocks;
+      
+ 
+      if(blocksToCompare===editorBlocks){
+               console.log("blocks are the same")
+        return
+ 
+        //if there is a difference, then we know that live content has changed and we can call replaceAllBlocks
+      }else{
+       //replaceAllBlocks()
+        /*
+        
+        Doesn't quite work right. Whether typing is controlled by the update document function in the parent component or the window.document.listener I still get the same result.
+        The editor rerendering in an infinite loop. I think it is because the editor is rerendering when the blocks are replaced and then the blocks are replaced again because the editor is rerendering.
+
+        */
+
+        console.log("blocks are different")
+       
+   
+      
+      }
+
+      // replaceAllBlocks();
+
+
+      /*
+      step 1: get live content which comes from a prop It is already a string
+      step 2: get the blocks from the editor, 
+      step 3: convert both blocks to strings
+      step 4: compare the strings
+      step 5: if they are the same, do nothing
+    
+
+      */
+    }
+
+    
+
+
+
+ 
+  }, [othersPresence ]);
+
+
+
   return (
     <div>
       <BlockNoteView
         editor={editor}
         theme={resolvedTheme === "dark" ? "dark" : "light"}
       />
+
+      <div className="flex flex-col">
+        <button onClick={replaceAllBlocks}>Update Collaborators</button>
+      </div>
     </div>
   );
 };
