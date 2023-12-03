@@ -1,32 +1,65 @@
-import React, { useState } from "react"; // Import useState
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { ModeToggle } from "@/components/mode-toggle";
-import { useNewEditor } from "@/hooks/use-new-editor";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { useNewEditor } from "@/hooks/use-new-editor";
 
 export const NewEditorModal = () => {
-  const [editorEmail, setEditorEmail] = useState(""); // State for email
-  const editor = useMutation(api.documents.update);
+  const [editorEmail, setEditorEmail] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(true);
+  const addEditorMutation = useMutation(api.documents.update);
+  const removeEditorMutation = useMutation(api.documents.updateEditor);
   const newEditor = useNewEditor();
+
   const { documentId } = useParams();
 
+  const data = useQuery(api.documents.getById, {
+    documentId: documentId as Id<"documents">,
+  });
+  const currentEditors = data?.editors;
+
   const addEditor = () => {
-    const promise = editor({
+    if (!isEmailValid) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    const promise = addEditorMutation({
       id: documentId as Id<"documents">,
       editor: editorEmail,
-    }); // Use the email from state
+    });
+
     toast.promise(promise, {
       loading: "Adding editor...",
       success: "Editor added!",
       error: "Failed to add editor.",
     });
+  };
+
+  const removeEditor = (editorToRemove) => {
+    const promise = removeEditorMutation({
+      id: documentId as Id<"documents">,
+      editorEmail: editorToRemove,
+      shouldAdd: false,
+    });
+
+    toast.promise(promise, {
+      loading: "Removing editor...",
+      success: "Editor removed!",
+      error: "Failed to remove editor.",
+    });
+  };
+
+  const handleEmailChange = (e) => {
+    const email = e.target.value;
+    setEditorEmail(email);
+
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    setIsEmailValid(validEmail || email === "");
   };
 
   return (
@@ -45,10 +78,11 @@ export const NewEditorModal = () => {
             id="editorEmail"
             type="email"
             placeholder="Enter email"
-            className="p-3 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:border-primary-500"
-            style={{ minWidth: "100%" }}
-            value={editorEmail} // Bind state to input
-            onChange={(e) => setEditorEmail(e.target.value)} // Update state on change
+            className={`p-3 text-sm border-2 ${
+              isEmailValid ? "border-gray-300" : "border-red-500"
+            } rounded-lg focus:outline-none focus:border-primary-500`}
+            value={editorEmail}
+            onChange={handleEmailChange}
           />
           <button
             onClick={addEditor}
@@ -56,6 +90,27 @@ export const NewEditorModal = () => {
           >
             Add User
           </button>
+          <div className="mt-6">
+            <h3 className="text-md font-semibold mb-2">
+              Current Collaborators:
+            </h3>
+            <ul className="list-disc pl-5">
+              {currentEditors?.map((editor, index) => (
+                <li
+                  key={index}
+                  className="flex justify-between items-center text-sm py-1"
+                >
+                  {editor}
+                  <button
+                    onClick={() => removeEditor(editor)}
+                    className="ml-2 text-xs text-red-600 hover:text-red-800"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

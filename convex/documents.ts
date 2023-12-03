@@ -381,14 +381,13 @@ export const removeCoverImage = mutation({
   },
 });
 
-
 export const searchDocuments = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
     // Retrieve the identity of the logged-in user
 
     const identity = await ctx.auth.getUserIdentity();
-     if (!identity) {
+    if (!identity) {
       throw new Error("Unauthenticated");
     }
     const userId = identity.subject; // The logged-in user's ID
@@ -397,11 +396,66 @@ export const searchDocuments = query({
     // and the `userId` matches the logged-in user's ID
     return await ctx.db
       .query("documents")
-      .withSearchIndex("search_content", (q) => 
-        q.search("content", args.query)
-         .eq("userId", userId)      // Filter by the logged-in user's ID
-         .eq("isArchived", false)   // Filter out archived documents
+      .withSearchIndex(
+        "search_content",
+        (q) =>
+          q
+            .search("content", args.query)
+            .eq("userId", userId) // Filter by the logged-in user's ID
+            .eq("isArchived", false), // Filter out archived documents
       )
       .take(5);
-  }
+  },
+});
+
+export const updateEditor = mutation({
+  args: {
+    id: v.id("documents"),
+    editorEmail: v.string(),
+    shouldAdd: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Authentication check
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+
+    const userId = identity.subject;
+    const userEmail = identity.email;
+
+    // Document existence check
+    const document = await ctx.db.get(args.id);
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
+    // Authorization check
+    if (
+      document.userId !== userId &&
+      !document.editors?.includes(userEmail as string)
+    ) {
+      throw new Error("Unauthorized");
+    }
+
+    // Update the editors array based on shouldAdd flag
+    let updatedEditors = document.editors || [];
+    if (args.shouldAdd) {
+      if (!updatedEditors.includes(args.editorEmail)) {
+        updatedEditors.push(args.editorEmail);
+      } else {
+        throw new Error("Editor already has access");
+      }
+    } else {
+      updatedEditors = updatedEditors.filter(
+        (editor) => editor !== args.editorEmail,
+      );
+    }
+
+    // Update the document with the new editors list
+    const updatedDocument = await ctx.db.patch(args.id, {
+      editors: updatedEditors,
+    });
+    return updatedDocument;
+  },
 });
