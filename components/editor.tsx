@@ -1,11 +1,33 @@
 "use client";
 
 /*
-1. Ai tools only work by reading the current block and then updating it. This can be improved by taking advantage of insert, replace, nest/unnest, identifying certain blocks, etc to make more dynamic and useful tools.
-2. This editor is 300 lines long. The AI blocks can easily be moved to their own files and folder structure
-3. Live Editor update doesn't exist. The bug lies with when and how I rerender the content Doesn't quite work right. Whether typing is controlled by the update document function in the parent component or the window.document.listener I still get the same result.
-        The editor rerendering in an infinite loop. I think it is because the editor is rerendering when the blocks are replaced and then the blocks are replaced again because the editor is rerendering.
-4. The token/completion section needs to be reworked
+  Editor Component Overview:
+
+  The Editor component is a collaborative document editing tool that enables real-time updates and interactions among users. Integrated with AI, it offers unique features like language translation, action plan generation, and story creation, enhancing user engagement and productivity.
+
+  Features:
+  - AI Integration: Enhances text with language translation, action plans, and storytelling.
+  - Real-Time Collaboration: Allows multiple users to edit documents simultaneously and see live updates.
+  - Notification System: Informs users about ongoing changes, mainly triggered by typing. Future enhancements could include notifications for non-textual changes like formatting.
+
+  Working Mechanism:
+  - The editor synchronizes user inputs in real-time, ensuring all participants see updates as they happen.
+  - AI tools are activated through specific user commands or selections within the editor.
+  - User activities, including presence and typing, are tracked to provide a responsive collaborative experience.
+
+  Known Issues and Potential Improvements:
+  - AI tool scope is limited to current text blocks; extending this to more dynamic content manipulation could enhance user experience.
+  - Codebase refactoring is needed for improved maintainability and readability.
+  - The live update mechanism is causing an infinite re-render loop; optimizing the rendering logic can resolve this.
+  - Enhancing the token/completion logic for AI interactions will improve performance and user interaction.
+  - Collaboration notifications currently focus on typing; expanding this to include notifications for formatting changes will provide a more comprehensive collaboration experience.
+
+  Future Improvements:
+  - Adding a chat feature and comments feature to enhance collaboration.
+  - Adding a version control system to enable document history tracking.
+  - Reusable AI blocks to improve developer experience. It will take the props: blockType, blockName, blockIcon, blockHint, blockAliases, blockGroup, blockExecute, aiPrompt, aiModel and then work out of the box
+  - Whiteboards, mindmaps, canvases, and other collaborative tools to enhance user experience.
+  - Real time editor updates
 */
 
 import { useCompletion } from "ai/react";

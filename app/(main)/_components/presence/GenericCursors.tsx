@@ -1,3 +1,13 @@
+/*GenericSharedCursors Component
+This component tracks and displays cursor positions and typing indicators for users
+collaborating in a shared space. It listens for local pointer movements and updates
+the user's presence data. Cursors of other active users are shown as overlays on the
+children elements contained within this component.
+
+Props:
+- othersPresence: Array of presence data for other users.
+- updatePresence: Function to update local user's presence data.
+- children: Content over which the shared cursors are displayed.*/
 import { useRef, useEffect } from "react";
 import { PresenceData, isOnline } from "@/hooks/usePresence";
 import { useUser } from "@clerk/clerk-react";
@@ -12,14 +22,12 @@ type Data = {
 };
 
 type GenericSharedCursorsProps = {
-  myPresenceData: Data;
   othersPresence?: PresenceData<Data>[];
   updatePresence: (p: Partial<Data>) => void;
   children: React.ReactNode;
 };
 
 export default function GenericSharedCursors({
-  myPresenceData,
   othersPresence,
   updatePresence,
   children,

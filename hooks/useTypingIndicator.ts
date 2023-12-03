@@ -1,3 +1,8 @@
+/*
+Currently not using this hook in the app. Will integrate while debugging online status.
+
+*/
+
 import { useEffect } from "react";
 
 export default (

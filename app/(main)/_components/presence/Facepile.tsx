@@ -1,3 +1,11 @@
+/*The Facepile component is used to display a list of user avatars ("faces")
+to represent active users' presence in an application. It accepts an array of
+presence data, each containing an emoji, name, and profile URL. This component
+updates every 1000 milliseconds (UPDATE_MS) to ensure the presence data is current.
+It displays up to five avatars sorted by their online status and the time they were created.
+If the user is online, their avatar is shown with their name and "Online" status;
+otherwise, it shows their name and the last seen date.*/
+
 import classNames from "classnames";
 import { useEffect, useState } from "react";
 import { isOnline, PresenceData } from "@/hooks/usePresence";
