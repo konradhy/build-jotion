@@ -2,20 +2,17 @@
 
 ![Copy of Copy of Copy of Fullstack Twitter Clone (6)](https://github.com/AntonioErdeljac/notion-clone-tutorial/assets/23248726/66bcfca3-93bf-4aa4-950d-f98c020e1156)
 
-Check out Antonio's YouTube video that this project is based on. Be sure to subscribe if you are a developer.
+Check out Antonio's YouTube video that this project is based on. Be sure to subscribe if you are a developer.[VIDEO TUTORIAL](https://www.youtube.com/watch?v=ZbX4Ok9YX94)
 
-[VIDEO TUTORIAL](https://www.youtube.com/watch?v=ZbX4Ok9YX94)
+## Build Bounty
 
-This project is part of Convex.dev's first "Build Bounty" A combination of a hackathon, a bug bounty and a contest. Convex is a backend development platform with some pretty impressive features. Check them out; they have a generous free tier and an active dev community on discord.
+This project is part of Convex.dev's first "Build Bounty" A combination of a hackathon, a bug bounty and a contest. Convex is a backend development platform with some pretty impressive features. Check them out; they have a generous free tier and an active dev community on discord. -> [Convex Website](https://www.convex.dev/)
 
-[Convex Website](https://www.convex.dev/)
+You might also want to check out BlockNote, the block-based text editors that gives the "Notion" effect -> [BlockNote](https://www.blocknotejs.org/)
 
-You might also want to check out BlockNote, the block-based text editors that gives the "Notion" effect
-[BlockNote](https://www.blocknotejs.org/)
+## Notice
 
 I might change the location of this repo in the future but I will definitely build out more features that take advantage of Convex's backend (starting with chat with your documents leveraging vector search and embeddings and switching from EdgeStore to Convex file storage). I will also add instructions to allow anyone who followed Antonio's tutorial to follow this repo as well. So be sure to favorite, star or watch if you're interested.
-
-# Collaborative Editing Platform
 
 ## 🌟 Features
 
