@@ -24,11 +24,14 @@ I might change the location of this repo in the future but I will definitely bui
 ### 🧠 AI-Enhanced Editing
 
 - **Slash Command AI Tools**: Utilize AI features like Action Plan Maker, AI Translation, and Story Generation directly in the BlockNote editor.
-- **Dynamic Content Creation**: AI tools for translating text, summarizing key points, and more.
 
 ### 👥 Real-Time Presence Display
 
 - **Live Collaborative Environment**: Google Docs-like presence indicators showing who's active in real-time.
+
+### Enhanced Document Discovery with Convex Full Text Search
+
+- **Efficient and Reactive Search**: The reactivity of Convex's database is one of it's coolest features. Check out the power of full text search to pinpoint documents containing specific keywords by delving straight into string fields.
 
 ### 🎨 Gorgeous User Interface
 
