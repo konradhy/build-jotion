@@ -86,7 +86,7 @@ git clone https://github.com/AntonioErdeljac/notion-clone-tutorial.git
 npm i
 ```
 
-### Setup .env file
+### Setup .env and Convex Dashboard
 
 ```js
 # Deployment used by `npx convex dev`
@@ -98,8 +98,7 @@ CLERK_SECRET_KEY=
 
 EDGE_STORE_ACCESS_KEY=
 EDGE_STORE_SECRET_KEY=
-
-OPENAI_API_KEY
+OPENAI_API_KEY+
 ```
 
 ### Setup Convex
